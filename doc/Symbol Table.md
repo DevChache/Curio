@@ -1,6 +1,7 @@
 ## Symbol Table
 ```
 ID. | Character | Type
+-------------------------------
 1   | stringV   | VariableType
 2   | numberV   | VariableType
 3   | booleanV  | VariableType
