@@ -2,7 +2,7 @@
 A simple compiler design by [DevChache](https://github.com/DevChache), NCEPU;
 
 ### Introduction
-Curio is a simple compiler and the syntax is as simple as possible.
+Curio is a simple compiler and the syntax is as simple as possible. And to compile the project- you need to install clang. Currently for some reason, clang compiler encountered some error. It could be solved in the later developing.
 
 ### Extension
 The source code file extension for Curio is `*.curio`, and in default, the compiled file has a extension of `*.run`.

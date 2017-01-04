@@ -1,30 +1,30 @@
-#include <stdio.h>
+#include <stdio.h> // Debuging includes
 
 class Symbol
 {
 public:
-    Symbol(int index,int identifier,char* symbol):_index(index),_identifier(identifier),_symbol(symbol){};
-    class Symbol* next;
-    class Symbol* previous;
-    int GetIndex();
-    int GetIdentifier();
-    char* GetSymbolCharacters();
+	Symbol(int index,int identifier,char* symbol):_index(index),_identifier(identifier),_symbol(symbol){};
+	class Symbol* next;
+	class Symbol* previous;
+	int GetIndex();
+	int GetIdentifier();
+	char* GetSymbolCharacters();
 private:
-    int _index; // Index of the symbol in symbol scanning.
-    int _identifier; // ID. from Symbol Table.md.
-    char* _symbol; // Name of the symbol.
+	int _index; // Index of the symbol in symbol scanning.
+	int _identifier; // ID. from Symbol Table.md.
+	char* _symbol; // Name of the symbol.
 };
 int Symbol::GetIndex()
 {
-    return _index;
+	return _index;
 }
 int Symbol::GetIdentifier()
 {
-    return _identifier;
+	return _identifier;
 }
 char* Symbol::GetSymbolCharacters()
 {
-    return _symbol;
+	return _symbol;
 }
 
 
@@ -32,26 +32,43 @@ char* Symbol::GetSymbolCharacters()
 class SymbolTable
 {
 public: 
-    SymbolTable();
-    int GetSymbolCount();
+	SymbolTable();
+	int GetSymbolCount();
+	Symbol GetHeaderSymbol();
+	void AppendSymbol(Symbol* symbol);
+	void RemoveSymbol(int index);
+	Symbol* LookAhead(Symbol* seeker);
 private:
-    int _count;
-    Symbol* _HeaderSymbol;
-    Symbol* _CurrentSymbol;
-    void AppendSymbol(Symbol symbol);
-    void RemoveSymbol(int index);
-    Symbol LookAhead();
-    Symbol* GetHeaderSymbol();
+	int _count;
+	Symbol* _HeaderSymbol;
+	Symbol* _TailSymbol;
 };
 int SymbolTable::GetSymbolCount()
 {
-    return _count;
+	return _count;
 }
-Symbol SymbolTable::LookAhead()
+
+Symbol SymbolTable::GetHeaderSymbol()
 {
-    return *_CurrentSymbol;
+	return *_HeaderSymbol;
 }
-Symbol* SymbolTable::GetHeaderSymbol()
+
+void SymbolTable::AppendSymbol(Symbol* symbol)
 {
-    
+	(*symbol).next = NULL;
+	(*_TailSymbol).next = symbol;
+	_TailSymbol  = symbol;
+}
+void SymbolTable::RemoveSymbol(int index)
+{
+	Symbol* Seeker = _HeaderSymbol;
+	while (index-- > 0)
+	{
+		if ((*Seeker).next == NULL)
+			return;
+		Seeker = (*Seeker).next;
+	}
+	Seeker = (*Seeker).previous;
+	delete (*Seeker).next;
+	Seeker->next = NULL;
 }
