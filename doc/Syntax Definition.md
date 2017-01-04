@@ -6,6 +6,8 @@
 - The normal styled characters such as '(' refers to a terminal symbol.
 #### Productions
 ##### The assignment case:
+
 *stmt* → *var* = *expr* ;
 ##### The `if-else` case:
+
 *stmt* → **if** ( *expr* ) *stmt* **else** *stmt* | **if** ( *expr* ) *stmt*
