@@ -7,9 +7,30 @@
 
 #### Productions
 
-##### The assignment case:
 
-*stmt* → *var* = *expr* ;
-##### The `if-else` case:
+program → block 
+> program is the largest container of a program.
 
-*stmt* → **if** ( *expr* ) *stmt* **else** *stmt* | **if** ( *expr* ) *stmt*
+block   → { dcls stmts } 
+> block is a block of codes.
+
+dcls    → dcls dcl | ɛ 
+> ɛ is the end of production.
+
+dcl     → type **id** ; 
+> dcl is abbr. of declaration.
+
+type    → type [ **num** ] | **basic** 
+> basic is one of 'string', 'number' and 'boolean'.
+  num is numbers from 0 to 9.
+
+stmts   → stmts stmt | ɛ
+
+stmt    → loc = bool ;
+        | **if** ( bool ) stmt
+        | **if** ( bool ) stmt **else** stmt
+        | **while** ( bool ) stmt
+        | block
+
+loc     → loc [ bool ] | **id**
+

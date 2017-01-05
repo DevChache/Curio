@@ -5,7 +5,7 @@ id → \b_?[a-zA-Z]+([0-9]*[a-zA-Z]*_*)*\b
 The production above shows us the lexical rules of an identifier. Here is the match examples:
 
 ![Identifier](lexical_identifier.png)
-> This is the result from [http://regexr.com/](http://regexr.com/).
+> result and examples from [http://regexr.com/](http://regexr.com/).
 
 An identifier must begin with '_' or an alphabet character (both upper case or lower case). Within an identifier, combination of alphabet characters, numbers and underscore is needed.
 
@@ -33,12 +33,12 @@ $variable
 ```
 
 #### KEYWORD
-keywd → string | number | boolean | true | false | for | if | else | void
+keywd → **string** | **number** | **boolean** | **true** | **false** | **for** | **if** | **else** | **void**
 
 The production shows the avaliable types of keywords.
 
 #### OPERATOR
-opt → **+** | **-** | **\*** | **/** | **=** | **==** | **>** | **<** | **<=** | **>=** | **!=** | **&&** | **||**
+opt → **+** | **-** | **\*** | **/** | **=** | **==** | **>** | **<** | **<=** | **>=** | **!=** | **&&** | **||** | **\\**
 
 #### DELIMITER
 dlmt → **;** | **,** | **(** | **)**  | **/\*** | **\*/** | **:** | **'** | **"** | **_** | **.** | **{**  | **}**

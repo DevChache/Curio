@@ -1,74 +1,64 @@
-#include <stdio.h> // Debuging includes
-
-class Symbol
+#include <stdio.h>
+#include <string>
+using namespace std;
+namespace lexical
 {
-public:
-	Symbol(int index,int identifier,char* symbol):_index(index),_identifier(identifier),_symbol(symbol){};
-	class Symbol* next;
-	class Symbol* previous;
-	int GetIndex();
-	int GetIdentifier();
-	char* GetSymbolCharacters();
-private:
-	int _index; // Index of the symbol in symbol scanning.
-	int _identifier; // ID. from Symbol Table.md.
-	char* _symbol; // Name of the symbol.
-};
-int Symbol::GetIndex()
-{
-	return _index;
-}
-int Symbol::GetIdentifier()
-{
-	return _identifier;
-}
-char* Symbol::GetSymbolCharacters()
-{
-	return _symbol;
-}
-
-
-
-class SymbolTable
-{
-public: 
-	SymbolTable();
-	int GetSymbolCount();
-	Symbol GetHeaderSymbol();
-	void AppendSymbol(Symbol* symbol);
-	void RemoveSymbol(int index);
-	Symbol* LookAhead(Symbol* seeker);
-private:
-	int _count;
-	Symbol* _HeaderSymbol;
-	Symbol* _TailSymbol;
-};
-int SymbolTable::GetSymbolCount()
-{
-	return _count;
-}
-
-Symbol SymbolTable::GetHeaderSymbol()
-{
-	return *_HeaderSymbol;
-}
-
-void SymbolTable::AppendSymbol(Symbol* symbol)
-{
-	(*symbol).next = NULL;
-	(*_TailSymbol).next = symbol;
-	_TailSymbol  = symbol;
-}
-void SymbolTable::RemoveSymbol(int index)
-{
-	Symbol* Seeker = _HeaderSymbol;
-	while (index-- > 0)
+	// The tags are defined in the document '~/doc/Symbol Table.md'.
+	enum Tag
 	{
-		if ((*Seeker).next == NULL)
-			return;
-		Seeker = (*Seeker).next;
-	}
-	Seeker = (*Seeker).previous;
-	delete (*Seeker).next;
-	Seeker->next = NULL;
+		STR = 1,
+		NUM = 2,
+		BOOL = 3,
+		ID = 4,
+		BASIC_STR = 5,
+		BASIC_NUM = 6,
+		BASIC_BOOL = 7,
+		TRUE = 8,
+		FALSE = 9,
+		WHILE = 10,
+		IF = 11,
+		ELSE = 12,
+		BASIC_VOID = 13,
+		ADD = 14,
+		SUB = 15,
+		MUL = 16,
+		DIV = 17,
+		ASN = 18,
+		EQU = 19,
+		GT = 20,
+		LT = 21,
+		LE = 22,
+		GE = 23,
+		NE = 24,
+		AND = 25,
+		OR = 26,
+		ESC = 27
+	};
+
+	class Token
+	{
+	public:
+		int tag;
+		Token(Tag tg)
+		{
+			tag = tg;
+		}
+		string toString()
+		{
+			return "" + tag;
+		}
+	};
+
+	class Number :public Token
+	{
+	public:
+		int value;
+		Number(int val):Token(Tag.NUM)
+		{
+			value = val;
+		}
+	};
+
+
+
 }
