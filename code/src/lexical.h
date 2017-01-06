@@ -189,9 +189,10 @@ namespace lexical
 				return true;
 			return false;
 		}
+		// Returns whether the given character a legal identifier character or not. For details of the lexical identifier, please refer to '~/doc/Lexical Rules.md'.
 		static bool IsLetter(char ch)
 		{
-			if ((ch >= 'a'&&ch <= 'z') || (ch >= 'A'&&ch <= 'Z'))
+			if ((ch >= 'a'&&ch <= 'z') || (ch >= 'A'&&ch <= 'Z') || ch =='_')
 				return true;
 			return false;
 		}
@@ -205,6 +206,7 @@ namespace lexical
 			{
 			case 10:return (int)ch - 48;
 			}
+			return -1;
 		}
 	};
 
@@ -260,11 +262,10 @@ namespace lexical
 			{
 				if (memcmp((reserved[index].ToString()).data(), str.data(), str.length()))
 				{
-					printf("success\n");
 					return reserved[index];
 				}
 			}
-			return Word("LLL", 10);
+			return Word("NULL", -1);
 		}
 		bool SetFileStream(bool filestream)
 		{
@@ -275,11 +276,12 @@ namespace lexical
 			bool go = true;
 			while (go)
 			{
+				readch();
 				switch (peek)
 				{
-				case ' ':;
-				case'\t':continue;
-				case '\n':line++; continue;
+				case ' ':break;
+				case '\t':break;
+				case '\n':line++; break;
 				default: go = false;
 				}
 			}
@@ -331,9 +333,89 @@ namespace lexical
 					readch();
 				} while (Pair::IsLetter(peek));
 				string str = ss.str();
+				Word word = MatchReserved(str);
+				if((int)word.GetTag()!=-1)
+				return word;
+				word = Word(str,Tag::ID);
+				reserve(word);
+				return word;
+			}
+			Token token(peek);
+			peek = ' ';
+			return token;
+		}
+		Token* pscan()
+		{
+			bool go = true;
+			while (go)
+			{
+				readch();
+				switch (peek)
+				{
+				case ' ':break;
+				case '\t':break;
+				case '\n':line++; break;
+				default: go = false;
+				}
+			}
+			switch (peek)
+			{
+			case '&':return readch('&') ? &struct_keyword.AND : new Token('&');
+			case '|':return readch('|') ? &struct_keyword.OR : new Token('|');
+			case '=':return readch('=') ? &struct_keyword.EQU : new Token('=');
+			case '!':return readch('=') ? &struct_keyword.NE : new Token('!');
+			case '<':return readch('=') ? &struct_keyword.LE : new Token('<');
+			case '>':return readch('=') ? &struct_keyword.GE : new Token('>');
 			}
 
+			// Get number type value from the input stream.
+			if (Pair::IsDigit(peek))
+			{
+				int result = 0;
+				do
+				{
+					result += (10 * result + Pair::Digit(peek));
+					readch();
+				} while (Pair::IsDigit(peek));
+				// Reached the boundary of the integer.
+				if (peek != '.')
+					return new Number(result);
+				float value = result;
+				float digit = 10;
 
+				while (true)
+				{
+					readch();
+					if (!Pair::IsDigit(peek))
+						break;
+					// Go on for a float number number.
+					value += Pair::Digit(peek) / digit;
+					digit *= 10;
+				}
+				// Return the matched float number.
+				return new Number(value);
+			}
+
+			// Get Identifier
+			if (Pair::IsLetter(peek))
+			{
+				stringstream ss;
+				ss.clear();
+				do {
+					ss << peek;
+					readch();
+				} while (Pair::IsLetter(peek));
+				string str = ss.str();
+				Word word = MatchReserved(str);
+				if((int)word.GetTag()!=-1)
+				return &word;
+				word = Word(str,Tag::ID);
+				reserve(word);
+				return &word;
+			}
+			Token token(peek);
+			peek = ' ';
+			return &token;
 		}
 	};
 	int Lexical::line = 1;
