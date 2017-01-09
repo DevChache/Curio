@@ -19,6 +19,7 @@ int main()
         storage.push_back(A.Scan());
         num -= A.GetInnerScanCount();
     }
+    // TODO
     
     printf("token length: %d\n",storage.size());
     A.Print(storage);
