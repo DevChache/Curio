@@ -10,24 +10,27 @@ using namespace lexical;
 int main()
 {
     Lexical A;
-    int a = 10;
+    int a = 5;
     vector<Token> storage;
     while(a-->0)
     {
         storage.push_back(*A.pscan());
     }
+    printf("%s\n","< index , value , tag >");
     for(int i = 0; i<storage.size(); i++)
     {
-        Token* token = &storage[i];
-		printf("word type length: %d\n",((Word*)token)->ToString().length());
-		// printf("number type length: %d\n",((Number*)token)->ToString().length());
-		// printf("token type length: %d\n",((Token*)token)->ToString().length());
-        // if(((Word*)token)->ToString().length()!=0)
-        //     printf("%s\t%d\n",(((Word*)token)->ToString()).data(),((Word*)token)->GetTag());
-        // else if(((Number*)token)->ToString().length()!=0)
-        //     printf("%s\t%d\n",(((Number*)token)->ToString()).data(),((Number*)token)->GetTag());
-        // else if(token->ToString().length()!=0)
-        //     printf("%s\t%d\n",(token->ToString()).data(),token->GetTag());
+        switch(storage[i].GetTypia())
+        {
+            case 3:{
+                Word* word = static_cast<Word *>(&storage[i]); 
+                printf("< %d , %s , %d >\n",i,(word->ToString()).data(),word->GetTag());
+                break;
+            }
+            case 1:{
+                Number* number = static_cast<Number *>(&storage[i]);
+                printf("< %d , %s , %d >\n",i,(number->ToString()).data(),number->GetTag());
+            }
+        }
     }
     char c;
     scanf("%c", &c);
