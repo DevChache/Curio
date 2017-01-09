@@ -10,28 +10,18 @@ using namespace lexical;
 int main()
 {
     Lexical A;
-    int a = 5;
+    int a = 10;
     vector<Token> storage;
     while(a-->0)
     {
-        storage.push_back(*A.pscan());
+        storage.push_back(A.scan());
     }
-    printf("%s\n","< index , value , tag >");
+    printf("== Token Output ==\n%s\n","< index , tag >");
     for(int i = 0; i<storage.size(); i++)
     {
-        switch(storage[i].GetTypia())
-        {
-            case 3:{
-                Word* word = static_cast<Word *>(&storage[i]); 
-                printf("< %d , %s , %d >\n",i,(word->ToString()).data(),word->GetTag());
-                break;
-            }
-            case 1:{
-                Number* number = static_cast<Number *>(&storage[i]);
-                printf("< %d , %s , %d >\n",i,(number->ToString()).data(),number->GetTag());
-            }
-        }
+        printf("< %d , %d >\n",i,storage[i].GetTag());
     }
+    printf("== END ==\n");
     char c;
     scanf("%c", &c);
     return 0;

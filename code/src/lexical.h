@@ -58,7 +58,7 @@ namespace lexical
 			tag = tg;
 			typia = (int)lexical::Typia::T_TOKEN;
 		}
-		virtual string ToString()
+		string ToString()
 		{
 			stringstream ss;
 			ss.clear();
@@ -337,88 +337,7 @@ namespace lexical
 			peek = ' ';
 			return token;
 		}
-		Token* pscan()
-		{
-			bool go = true;
-			while (go)
-			{
-				readch();
-				switch (peek)
-				{
-				case ' ':break;
-				case '\t':break;
-				case '\n':line++; break;
-				default: go = false;
-				}
-			}
-			switch (peek)
-			{
-			case '&':if(readch('&')) {peek=' ';return &struct_keyword.AND;} {peek=' '; return new Token('&');}
-			case '|':if(readch('|')) {peek=' ';return &struct_keyword.OR ;} {peek=' '; return new Token('|');}
-			case '=':if(readch('=')) {peek=' ';return &struct_keyword.EQU;} {peek=' '; return new Token('=');}
-			case '!':if(readch('=')) {peek=' ';return &struct_keyword.NE ;} {peek=' '; return new Token('!');}
-			case '<':if(readch('=')) {peek=' ';return &struct_keyword.LE ;} {peek=' '; return new Token('<');}
-			case '>':if(readch('=')) {peek=' ';return &struct_keyword.GE ;} {peek=' '; return new Token('>');}
-			}
-
-			// Get number type value from the input stream.
-			if (Pair::IsDigit(peek))
-			{
-				int result = 0;
-				do
-				{
-					result += (10 * result + Pair::Digit(peek));
-					readch();
-				} while (Pair::IsDigit(peek));
-				// Reached the boundary of the integer.
-				if (peek != '.')
-				{
-					peek = ' ';
-					return new Number(result);
-				}
-				float value = result;
-				float digit = 10;
-
-				while (true)
-				{
-					readch();
-					if (!Pair::IsDigit(peek))
-						break;
-					// Go on for a float number number.
-					value += Pair::Digit(peek) / digit;
-					digit *= 10;
-				}
-				// Return the matched float number.
-				peek = ' ';
-				return new Number(value);
-			}
-
-			// Get Identifier
-			if (Pair::IsLetter(peek))
-			{
-				stringstream ss;
-				ss.clear();
-				do {
-					ss << peek;
-					readch();
-				} while (Pair::IsLetter(peek));
-				string str = ss.str();
-				Word word = MatchReserved(str);
-				printf("Word caught: %s, tag: %d, from: %s\n",(word.ToString()).data(),word.GetTag(),str.data());
-				if((int)word.GetTag()!=Tag::EOL)
-				{
-					peek = ' ';
-					return &word;
-				}
-				word = Word(str,Tag::ID);
-				reserve(word); // TODO: is this a must to reserve the new identifier?
-				peek = ' ';
-				return &word;
-			}
-			Token token(peek);
-			peek = ' ';
-			return &token;
-		}
+		
 	};
 	int Lexical::line = 1;
 	bool Lexical::IsFileStream = false;
