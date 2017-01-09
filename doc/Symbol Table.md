@@ -1,45 +1,34 @@
 ## Symbol Table
+
 ```
-ID. | Character | Type          | Alias
--------------------------------
-1   | stringV   | VariableType  | STR
-2   | numberV   | VariableType  | NUM
-3   | booleanV  | VariableType  | BOOL
-4   | ID        | Identifier    | ID
-5   | string    | Keyword       | BASIC_STR
-6   | number    | Keyword       | BASIC_NUM
-7   | boolean   | Keyword       | BASIC_BOOL
-8   | true      | Keyword       | TRUE
-9   | false     | Keyword       | FALSE
-10  | while     | Keyword       | WHILE
-11  | if        | Keyword       | IF
-12  | else      | Keyword       | ELSE
-13  | void      | Keyword       | BASIC_VOID
-14  | +         | Operator      | ADD
-15  | -         | Operator      | SUB
-16  | *         | Operator      | MUL
-17  | /         | Operator      | DIV
-18  | =         | Operator      | ASN
-19  | ==        | Operator      | EQU
-20  | >         | Operator      | GT
-21  | <         | Operator      | LT
-22  | <=        | Operator      | LE
-23  | >=        | Operator      | GE
-24  | !=        | Operator      | NE
-25  | &&        | Operator      | AND
-26  | ||        | Operator      | OR
-27  | \         | Operator      | ESC
-28  | ;         | Delimiter     | -
-29  | ,         | Delimiter     | -
-30  | (         | Delimiter     | -
-31  | )         | Delimiter     | -
-32  | /*        | Delimiter     | -
-33  | */        | Delimiter     | -
-34  | :         | Delimiter     | -
-35  | '         | Delimiter     | -
-36  | "         | Delimiter     | -
-37  | _         | Delimiter     | -
-38  | .         | Delimiter     | -
-39  | {         | Delimiter     | -
-40  | }         | Delimiter     | -
+\#  | Character | Type          | Alias         | Explanation
+1   | numberV   | VariableType  | NUM           | number
+2   | ID        | Identifier    | ID            | identifier
+3   | number    | Keyword       | BASIC_NUM     | basic type number
+4   | bool      | Keyword       | BASIC_BOOL    | basic type bool
+5   | true      | Keyword       | TRUE          | bool value true
+6   | false     | Keyword       | FALSE         | bool value false
+7   | while     | Keyword       | WHILE         | keyword while
+8   | if        | Keyword       | IF            | keyword if
+9   | else      | Keyword       | ELSE          | keyword else
+10  | +         | Operator      | ADD           | add B and A
+11  | -         | Operator      | SUB           | subtract B from A
+12  | *         | Operator      | MUL           | multiply A by B
+13  | /         | Operator      | DIV           | divide A by B
+14  | =         | Operator      | ASN           | assignment
+15  | ==        | Operator      | EQU           | judge if A equals B
+16  | >         | Operator      | GT            | left value is greater than the right one
+17  | <         | Operator      | LT            | left value is less than the right one
+18  | <=        | Operator      | LE            | left value is less than or equal to the right one
+19  | >=        | Operator      | GE            | left value is greater than or equal to the right one
+20  | !=        | Operator      | NE            | left value is not equal to the right one
+21  | &&        | Operator      | AND           | return true only when both side equals true
+22  | ||        | Operator      | OR            | return true when any one side equals true
+23  | !         | Operator      | NOT           | return the opposite value of the following expression
+24  | ;         | Delimiter     | EDS           | end of statement
+25  | (         | Delimiter     | LB            | left bracket
+26  | )         | Delimiter     | RB            | right bracket
+27  | {         | Delimiter     | BGN           | begin of block
+28  | }         | Delimiter     | END           | end of block
+29  | program   | Start         | START         | beginning of a program
 ```
