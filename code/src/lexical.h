@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <fstream>
 using namespace std;
 namespace lexical
 {
@@ -207,6 +208,8 @@ namespace lexical
 	private:
 		static int line;
 		static bool IsFileStream;
+		static string _filename;
+		static int charcount;
 		char peek = ' ';
 		vector<Word> reserved;
 		void reserve(Word w)
@@ -220,6 +223,20 @@ namespace lexical
 			// TODO: update this function to support a file stream version.
 			if (!Lexical::IsFileStream)
 				scanf("%c", &peek);
+			else
+			{
+				fstream fs(Lexical::_filename.data(),ios::in);
+				//string s;
+				//fs >> s;
+				//printf("%s\n",s.data());
+				if(fs.good())
+				{
+					fs.seekg(sizeof(char)*Lexical::charcount,ios::beg);
+					fs.read(&peek,sizeof(char));
+					Lexical::charcount++;
+				}
+				fs.close();
+			}
 		}
 		// Judge whether the next character equals the given character.
 		bool readch(char c)
@@ -243,6 +260,7 @@ namespace lexical
 			reserve(struct_type.STR);
 			reserve(struct_type.VOID);
 		}
+		// 'GetReserved' returns the WORDs reserved in memory as a vector<Word>;
 		vector<Word> GetReserved()
 		{
 			return reserved;
@@ -259,11 +277,24 @@ namespace lexical
 			}
 			return Word("NULL", -1);
 		}
-		bool SetFileStream(bool filestream)
+
+		// Set the IsFileStream flag to true.
+		bool SetFileStream(string filename)
 		{
-			Lexical::IsFileStream = filestream;
+			if(filename.size()==0)
+			{
+				printf("Parameter error!\n");
+				Lexical::IsFileStream = false;
+			}
+			else 
+			{
+				Lexical::IsFileStream = true;
+				Lexical::_filename = filename;
+			}
 			return Lexical::IsFileStream;
 		}
+
+		// 'scan' returns one Token scaned by the lexical analysiser.
 		Token scan()
 		{
 			bool go = true;
@@ -337,9 +368,53 @@ namespace lexical
 			peek = ' ';
 			return token;
 		}
-		
+
+		// print the tokens to standard i/o device (screen);
+		void print(vector<Token> tokens)
+		{
+			if(Lexical::IsFileStream)
+				fprint(tokens);
+			printf("buffer size: %d\n",(int)tokens.size());
+			if(tokens.size()==0)
+				return;
+			const int size = tokens.size();
+			for(int index= 0;index<size;index++)
+			{
+				int tag = tokens[index].GetTag();
+				printf("%d,\t %d\n",index,tag);
+			}
+		}
+
+		// Manually print the tokens to local file or control the target with the IsFileStream flag.
+		void fprint(vector<Token> tokens)
+		{
+			if(tokens.size()==0)
+				return;
+			const int size = tokens.size();
+			std::fstream stream("a.token",ios::out|ios::trunc);
+			if(!stream)
+			{
+				printf("ERROR OPENING a.token!\n");
+				return;
+			}else{
+				stream.clear();
+				stream<<
+				"# David Moriaty (@DevChache, yangzd1996@outlook.com)\n"<<
+				"# This is the auto generated token file for lexical.h in CURIO, \n"<<
+				"# the first column of numbers are the index and the second column \n"<<
+				"# are the internal tags of each lexeme."<< endl;
+			}
+			printf("+++\n");
+			for(int index= 0;index<size;index++)
+			{
+				int tag = tokens[index].GetTag();
+				stream<<"< "<<index<<" ,\t"<<tag<<" >\n";
+			}
+			stream.close();
+		}
 	};
 	int Lexical::line = 1;
 	bool Lexical::IsFileStream = false;
-
+	string Lexical::_filename = "";
+	int Lexical::charcount = 0;
 }
