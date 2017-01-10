@@ -1,7 +1,6 @@
 #include <iostream>
-#include "src/lexical.h"
+#include "~\code\src\lexical.h"
 
-using namespace std;
 using namespace lexical;
 
 

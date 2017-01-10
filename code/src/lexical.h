@@ -11,10 +11,10 @@ namespace lexical
 	class Pair
 	{
 	public:
-		static bool IsDigit(char ch);
+		static bool IsDigit(char);
 		// Returns whether the given character a legal identifier character or not. For details of the lexical identifier, please refer to '~/doc/Lexical Rules.md'.
-		static bool IsLetter(char ch);
-		static int Digit(char ch, int numbering_system = 10);
+		static bool IsLetter(char);
+		static int Digit(char, int);
 	};
 
 
@@ -26,7 +26,7 @@ namespace lexical
 		static string _filename;
 		static int charcount;
 		int inner_scan_count;
-		char peek = ' ';
+		char peek;
 		vector<Token> reserved;
 		// Add one symbol to the reserved token array.
 		void reserve(Token w);
@@ -37,12 +37,12 @@ namespace lexical
 	public:
 		Lexical();
 		// MatchReserved function returns the keyword / type word from reserved area. While there is no match, the function returns a new Word of NULL value and Tag number -1;
-		Token MatchReserved(string str);
+		Token MatchReserved(string);
 		/* SetFileStream()
 		* Summary: Set the IsFileStream flag to true.
 		* Result
 		*/
-		bool SetFileStream(string filename);
+		bool SetFileStream(string);
 
 		/* Lexical::Scan()
 		* Summary: 'Scan' returns one Token scaned by the lexical analysiser.
@@ -56,14 +56,14 @@ namespace lexical
 		* Parameters:
 		* 	tokens: token list;
 		*/
-		static void Print(vector<Token> tokens);
+		static void Print(vector<Token>);
 
 		/* static Lexical::PrintFile()
 		* Summary: Manually print the tokens to local file or control the target with the IsFileStream flag.
 		* Parameters:
 		* 	tokens: token list;
 		*/
-		static void PrintFile(vector<Token> tokens);
+		static void PrintFile(vector<Token>);
 
 		/* Lexical::GetInnerScalCount()
 		* Summary: return value of inner_scan_count.

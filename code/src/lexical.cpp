@@ -3,21 +3,22 @@ using namespace lexical;
 
 // Implements of functions from class Pair.
 
-bool Pair::IsDigit(char ch)
+bool lexical::Pair::IsDigit(char ch)
 {
     if (ch <= '9'&&ch >= '0')
         return true;
     return false;
 }
+
 // Returns whether the given character a legal identifier character or not. For details of the lexical identifier, please refer to '~/doc/Lexical Rules.md'.
-bool Pair::IsLetter(char ch)
+bool lexical::Pair::IsLetter(char ch)
 {
     if ((ch >= 'a'&& ch <= 'z') || (ch >= 'A'&&ch <= 'Z') || ch =='_')
         return true;
     return false;
 }
 
-int Pair::Digit(char ch, int numbering_system)
+int lexical::Pair::Digit(char ch, int numbering_system = 10)
 {
     switch (numbering_system)
     {
@@ -29,21 +30,21 @@ int Pair::Digit(char ch, int numbering_system)
 
 
 
-
-
-
-
-
-
 // Implements of functions from class Lexical.
 
+// static members of class Lexical.
+int lexical::Lexical::line = 1;
+int lexical::Lexical::charcount = 0;
+bool lexical::Lexical::IsFileStream = false;
+string lexical::Lexical::_filename = "";
+
 // private functions
-void Lexical::reserve(Token w)
+void lexical::Lexical::reserve(Token w)
 {
     reserved.push_back(w);
 }
 
-void Lexical::readch()
+void lexical::Lexical::readch()
 {
     if (!Lexical::IsFileStream)
     {
@@ -66,7 +67,7 @@ void Lexical::readch()
 
 }
 
-bool Lexical::readch(char c)
+bool lexical::Lexical::readch(char c)
 {
     readch();
     if (peek != c)
@@ -77,7 +78,7 @@ bool Lexical::readch(char c)
 
 // public functions.
 
-Lexical::Lexical()
+lexical::Lexical::Lexical()
 {
     reserve(Token(Tag::IF,"if"));
     reserve(Token(Tag::ELSE,"else"));
@@ -87,9 +88,10 @@ Lexical::Lexical()
     reserve(Token(Tag::BASIC_BOOL,"bool"));
     reserve(Token(Tag::BASIC_NUM,"number"));
     inner_scan_count = 0;
+    peek = ' ';
 }
 
-Token Lexical::MatchReserved(string str)
+Token lexical::Lexical::MatchReserved(string str)
 {
     for (int index = 0; index < reserved.size(); index++)
     {
@@ -101,7 +103,7 @@ Token Lexical::MatchReserved(string str)
     return Token(Tag::EOL);// Must invoke functions from identifier table.
 }
 
-bool Lexical::SetFileStream(string filename)
+bool lexical::Lexical::SetFileStream(string filename)
 {
     if(filename.size()==0)
     {
@@ -116,7 +118,7 @@ bool Lexical::SetFileStream(string filename)
     return Lexical::IsFileStream;
 }
 
-Token Lexical::Scan()
+Token lexical::Lexical::Scan()
 {
     bool go = true;
     while (go)
@@ -203,7 +205,7 @@ Token Lexical::Scan()
     return token;
 }
 
-void Lexical::Print(vector<Token> tokens)
+void lexical::Lexical::Print(vector<Token> tokens)
 {
     if(Lexical::IsFileStream)
         PrintFile(tokens);
@@ -218,7 +220,7 @@ void Lexical::Print(vector<Token> tokens)
 }
 
 // Manually print the tokens to local file or control the target with the IsFileStream flag.
-void Lexical::PrintFile(vector<Token> tokens)
+void lexical::Lexical::PrintFile(vector<Token> tokens)
 {
     if(tokens.size()==0)
         return;
@@ -244,12 +246,7 @@ void Lexical::PrintFile(vector<Token> tokens)
     stream.close();
 }
 
-int Lexical::GetInnerScanCount()
+int lexical::Lexical::GetInnerScanCount()
 {
     return inner_scan_count;
 }
-// static members of class Lexical.
-int Lexical::line = 1;
-int Lexical::charcount = 0;
-bool Lexical::IsFileStream = false;
-string Lexical::_filename = "";
