@@ -31,4 +31,9 @@
 27  | {         | Delimiter     | BGN           | begin of block
 28  | }         | Delimiter     | END           | end of block
 29  | program   | Start         | START         | beginning of a program
+30  | do        | Keyword       | DO            | do-while loop style
+31  | then      | Keyword       | THEN          | if (...) then ... else ...
+32  | var       | Keyword       | VAR           | definition
+33  | ,         | Delimiter     | COMMA         | comma
+34  | :         | Delimiter     | COLON         | colon
 ```

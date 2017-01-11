@@ -1,4 +1,12 @@
-number a = 3;
-if (a == 3)
-   a = 5;
-a = 4;
+program HelloWorld
+    var A , B , C : number ;
+    {
+        A = 5 ; 
+        B = A + 5 ; 
+        C = 2 ;
+        if ( A == 5 )
+            then C = 3 ; 
+            else C = 5 ; 
+        while ( A && B )
+            do A = A - 1 ;
+     }

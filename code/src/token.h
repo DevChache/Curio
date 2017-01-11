@@ -1,5 +1,4 @@
-#include <string>
-using namespace std;
+#include "idtable.h"
 namespace token
 {
     // The tags are defined in the document '~/doc/Symbol Table.md'.
@@ -34,7 +33,12 @@ namespace token
 		EOL = -1,
 		BGN = 27,
 		END = 28,
-		START = 29
+		START = 29,
+		DO = 30,
+		THEN = 31,
+		VAR = 32,
+		COMMA = 33,
+		COLON = 34
 	};
 
     // TokenNode is the base data structure of tuples that stores entry information for the symbol table.
@@ -47,13 +51,51 @@ namespace token
         Tag Tag; // Internal Code of the token.
         int Address; // Entry address of identifier or constant. -1 for keywords or delimiters.
     public:
-        Token(token::Tag tag);
-        Token(token::Tag tag,string name);
+        Token(token::Tag);
+        Token(token::Tag,string);
         token::Tag GetTag();
         string GetName();
         int GetAddress();
+		int SetAddress(int);
         int GetIndex();
     };
     int Token::Count = 0;
+
+
+
+	Token::Token(token::Tag tag)
+	{
+		Tag = tag;
+		Index = Token::Count;
+		Token::Count ++;
+	}
+	Token::Token(token::Tag tag,string name)
+	{
+		Tag = tag;
+		Name = name;
+		Index = Token::Count;
+		Token::Count ++;
+	}
+	token::Tag Token::GetTag()
+	{
+		return Tag;
+	}
+	string Token::GetName()
+	{
+		return Name;
+	}
+	int Token::GetAddress()
+	{
+		return Address;
+	}
+	int Token::SetAddress(int address)
+	{
+		Address = address;
+		return Address;
+	}
+	int Token::GetIndex()
+	{
+		return Index;
+	}
 
 }
