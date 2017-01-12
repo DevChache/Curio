@@ -220,7 +220,6 @@ private:
     string tt = "";
 
 public:
-    vector<E>es;
     vector<Equ>equs;
     vector<Token> tokens;  // 关键字
     vector<Symbol> symbols;// 自定义变量和常数
@@ -230,7 +229,7 @@ public:
     {
         tokens = t;
         symbols = s;
-        checkMainProgram();// 执行主要函数
+        MainProgram();// 执行主要函数
     };
 
     // Summary: return internal quadruples - equs;
@@ -239,7 +238,7 @@ public:
         return equs;
     }
 
-    //取token数组的下一个
+    //取下一个token
     void Next()
     {
         if (i < tokens.size() - 1)
@@ -247,7 +246,7 @@ public:
             i++;
         }
     }
-    //取token数组的上一个
+    //取上一个token
     void Before()
     {
         if (i > 0)
@@ -259,11 +258,8 @@ public:
     // 创建临时变量NewTemp()并添加到symble中
     string NewTemp() {
 		stringstream ss;
-		ss << "T" <<ti;
-        
+		ss << "T" <<ti;    
         ti++;
-        //Symbol s(SymbolType::IDENTIFIER,temp);
-        //symbols.push_back(s);
         return ss.str();
     }
 
@@ -274,15 +270,15 @@ public:
     }
 
     // 产生四元式
+	// 将新生成的四元式表项fp添加到四元式列表equs中
     void gen(string op, string strLeft, string strRight, string result) {
         Equ fp = Equ(op, strLeft, strRight, result);
-        // 将新生成的四元式表项fp添加到四元式列表equs中
         equs.push_back(fp);
     }
 
-    // 主要函数checkMainProgram()
+    // 主要函数MainProgram()
     // 〈程序〉→ program〈标识符〉〈程序体〉
-    void checkMainProgram() {
+    void MainProgram() {
         if (tokens[i].GetTag() == 29)// 如果是program，判断下一个单词
         {
             Next();
@@ -290,7 +286,7 @@ public:
             {
 
                 Next();
-                checkProgramBody();// 程序体
+                ProgramBody();// 程序体
             }
             else {
                 error = "该程序缺少标示符";
@@ -299,18 +295,14 @@ public:
         else {
             error = "该程序缺少关键字program";
         }
-        //for (Equ equ : equs)
-        // {
-        //	 cout << "("<<equ.Op<<","<<equ.StrLeft<<","<<equ.StrRight<<","<<equ.result<<")"<< endl;
-        // }
         cout << error << endl;
     }
 
-    // 程序体checkProgramBody()
+    // 程序体ProgramBody()
     // 〈程序体〉→〈变量说明〉〈复合句〉
     // 〈变量说明〉→ var〈变量定义〉|ε
     // 〈复合句〉→ {〈语句表〉}
-    void checkProgramBody() {
+    void ProgramBody() {
         if (tokens[i].GetTag() == 32)// 如果是var，指向下一个单词
         {
             Next();
@@ -321,7 +313,7 @@ public:
             Next();
             checkComplex();// 执行语句表
         }
-        else// 否则报错
+        else
         {
             error = "程序缺少var或{";
         }
@@ -343,19 +335,6 @@ public:
                 // 类型为bool、number
                 if (tokens[i].GetTag() == 4 || tokens[i].GetTag() == 3)
                 {
-                    // // 定义j，指向前面的标示符
-                    // int j = i;
-                    // j = j - 2;
-                    // // 类型定义正确，在符号表中记录该标识符的类型
-					
-                    // symbols[tokens[j].GetAddress()].SetType(tokens[i].GetTag()==2?SymbolType::IDENTIFIER:SymbolType::CONST);
-                    // j--;
-                    // // 若标识符后面有逗号，表示同时定义了几个相同类型的变量，把它们都添加到符号表中
-                    // while (tokens[j].GetTag() == 33 && j > 0) {
-                    //     j--;
-                    //     symbols[tokens[j].GetAddress()].SetType(tokens[i].GetTag()==2?SymbolType::IDENTIFIER:SymbolType::CONST);
-                    //     j--;
-                    // }
                     Next();
                     if (tokens[i].GetTag() == 24) // 如果是分号，判断下一个单词，若为{，执行复合句；否则继续循环执行变量定义
                     {
@@ -462,7 +441,6 @@ public:
         else if (tokens[i].GetTag() == 27 || tokens[i].GetTag() == 7
                  || tokens[i].GetTag() == 8)// 如果是{或while或if
         {
-			printf("testing tokens[%d]=%d\n",i,tokens[i].GetTag());
             StructSentence(s);// 执行结构句
         }
         else// 否则返回到前一个字符
@@ -845,13 +823,13 @@ public:
             }
         }
         else {
-            CalQua();// 执行算术量
+            cal();// 执行算术量
         }
     }
 
-    // 算术量CalQua()
+    // 算术量cal()
     // 〈算术量〉→〈标识符〉｜〈整数〉｜〈实数〉
-    void CalQua() {
+    void cal() {
         if (tokens[i].GetTag() == 2 || tokens[i].GetTag() == 1)// 标识符、整数、实数
         {
             //tt = tokens[i].GetName();// 记录变量名

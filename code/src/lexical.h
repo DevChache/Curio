@@ -362,7 +362,6 @@ namespace lexical
 			{
 				Symbol symbol(SymbolType::IDENTIFIER, str);
 				registered_index = symbol.GetIndex();
-                printf("symbol type: %d, name: %s\n",symbol.GetType(),symbol.GetName().data());
 				add_symbol(symbol);
 			}
             reserved_word = Token(Tag::ID,str);
