@@ -1,0 +1,14 @@
+# David Moriaty (@DevChache, yangzd1996@outlook.com)
+# This is the auto generated symbol file for idtable.h in CURIO, 
+# the first column of numbers are the index and the second column 
+# are the internal tags of each lexeme.
+
+< idx , type , name >
+< 0 ,	 1 ,	 HelloWorld >
+< 1 ,	 1 ,	 A >
+< 2 ,	 1 ,	 B >
+< 3 ,	 1 ,	 C >
+< 4 ,	 2 ,	 5 >
+< 5 ,	 2 ,	 2 >
+< 6 ,	 2 ,	 3 >
+< 7 ,	 2 ,	 1 >

@@ -68,6 +68,7 @@ namespace token
 		Tag = tag;
 		Index = Token::Count;
 		Token::Count ++;
+		Address = -1;
 	}
 	Token::Token(token::Tag tag,string name)
 	{
@@ -75,6 +76,7 @@ namespace token
 		Name = name;
 		Index = Token::Count;
 		Token::Count ++;
+		Address = -1;
 	}
 	token::Tag Token::GetTag()
 	{

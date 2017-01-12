@@ -1,8 +1,9 @@
 #include <iostream>
 #include "src/lexical.h"
+#include "src/generator.h"
 
 using namespace lexical;
-using namespace idtable;
+using namespace quadruple;
 int main()
 {
     if(false)
@@ -14,21 +15,33 @@ int main()
         fs.seekg(0,ios::end);
         int num = fs.tellg();
         fs.close();
-        printf("character size: %d\n",num);
         while(num>1)
         {
             storage.push_back(A.Scan());
             num -= A.GetInnerScanCount();
-            printf("--------num left: %d\n",num);
         }
-        // TODO
-        
-        printf("token length: %d\n",storage.size());
-        A.Print(storage);
+        A.PrintFile(storage);
+        A.PrintSymbolsFile(A.GetSymbols());
     }
-    Symbol symbol(SymbolType::CONST,"15.5");
-    printf("value: %lf\n", symbol.GetValue());
-    char c;
-    scanf("%c", &c);
+
+    vector<Quadruple> qpls;
+    qpls.push_back(Quadruple(Equ("0","1","2","3")));
+    qpls.push_back(Quadruple(Equ("1","1","2","3")));
+    qpls.push_back(Quadruple(Equ("2","1","2","3")));
+    qpls.push_back(Quadruple(Equ("3","1","2","3")));
+    qpls.push_back(Quadruple(Equ("4","1","2","3")));
+    qpls.push_back(Quadruple(Equ("5","1","2","3")));
+    qpls.push_back(Quadruple(Equ("2","1","2","3")));
+    qpls.push_back(Quadruple(Equ("3","1","2","3")));
+    generator::PrintQuadruplesFile(qpls);
+    generator::PrintBasicBlocksFile(qpls);
+
+    string anc_token,anc_symbol,anc_quadruple,anc_basicblock,anc_assembly;
+    anc_token = "- Tokens file: a.token\n";
+    anc_symbol = "- Symbols file: a.symbols\n";
+    anc_quadruple = "- Quadruples file: a.quadruples\n";
+    anc_basicblock = "- Basic Blocks file: a.bblocks\n";
+    anc_assembly = "- Assembly file: a.assembly.asm\n";
+    printf("\n:) Done with success!\n\n### OUTPUT FILES ###\n%s%s%s%s%s\n",anc_token.data(),anc_symbol.data(),anc_quadruple.data(),anc_basicblock.data(),anc_assembly.data());
     return 0;
 }

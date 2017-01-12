@@ -20,6 +20,8 @@ namespace idtable
         Symbol(SymbolType,double);
         string GetName();
         double GetValue();
+        int GetType();
+        int GetIndex();
     };
     int Symbol::count = 0;
     Symbol::Symbol(SymbolType type,string name)
@@ -27,6 +29,7 @@ namespace idtable
         Index = count;
         Type = type;
         Name = name;
+        Symbol::count++;
     }
     Symbol::Symbol(SymbolType type,double value)
     {
@@ -36,6 +39,11 @@ namespace idtable
         ss.clear();
         ss<<value;
         Name = ss.str();
+        Symbol::count++;
+    }
+    int Symbol::GetType()
+    {
+        return (int)Type;
     }
     string Symbol::GetName()
     {
@@ -69,5 +77,9 @@ namespace idtable
             index++;
         }
         return value;
+    }
+    int Symbol::GetIndex()
+    {
+        return Index;
     }
 }

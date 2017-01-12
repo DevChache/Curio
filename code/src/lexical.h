@@ -3,6 +3,7 @@
 #include <fstream>
 #include "token.h"
 using namespace token;
+using namespace idtable;
 namespace lexical
 {
 	// Pair is used to judge whether the given character a number or a letter.
@@ -25,6 +26,7 @@ namespace lexical
 		static int charcount;
 		int inner_scan_count;
 		char peek;
+		vector<Symbol> SymbolTable;
 		vector<Token> reserved;
 		// Add one symbol to the reserved token array.
 		void reserve(Token);
@@ -32,41 +34,36 @@ namespace lexical
 		void readch();
 		// Judge whether the next character equals the given character.
 		bool readch(char);
+
+		void add_symbol(Symbol);
 	public:
 		Lexical();
 		// MatchReserved function returns the keyword / type word from reserved area. While there is no match, the function returns a new Word of NULL value and Tag number -1;
 		Token MatchReserved(string);
-		/* SetFileStream()
-		* Summary: Set the IsFileStream flag to true.
-		* Result
-		*/
+		
+		vector<Symbol> GetSymbols();
+		
+		// Summary: Set the IsFileStream flag to true.
+		// Result
 		bool SetFileStream(string);
 
-		/* Lexical::Scan()
-		* Summary: 'Scan' returns one Token scaned by the lexical analysiser.
-		* Return: one token object each times.
-		*/
+		// Summary: 'Scan' returns one Token scaned by the lexical analysiser.
+		// Return: one token object each times.
 		Token Scan();
 
+		int AddressRegisteredSymbol(string,SymbolType );
 		
-		/* static Lexical::Print()
-		* Summary: Print the tokens to standard i/o (eg. console).
-		* Parameters:
-		* 	tokens: token list;
-		*/
+		// Summary: Print the tokens to standard i/o (eg. console).
 		static void Print(vector<Token>);
 
-		/* static Lexical::PrintFile()
-		* Summary: Manually print the tokens to local file or control the target with the IsFileStream flag.
-		* Parameters:
-		* 	tokens: token list;
-		*/
+		// Summary: Manually print the tokens to local file or control the target with the IsFileStream flag.
 		static void PrintFile(vector<Token>);
 
-		/* Lexical::GetInnerScalCount()
-		* Summary: return value of inner_scan_count.
-		* Return: value of inner_scan_count.
-		*/
+		static void PrintSymbols(vector<Symbol>);
+		static void PrintSymbolsFile(vector<Symbol>);
+
+		// Summary: return value of inner_scan_count.
+		// Return: value of inner_scan_count.
 		int GetInnerScanCount();
 	};
 
@@ -78,7 +75,6 @@ namespace lexical
 
 
     // Implements of functions from class Pair.
-
     bool lexical::Pair::IsDigit(char ch)
     {
         if (ch <= '9'&&ch >= '0')
@@ -86,13 +82,15 @@ namespace lexical
         return false;
     }
 
-    // Returns whether the given character a legal identifier character or not. For details of the lexical identifier, please refer to '~/doc/Lexical Rules.md'.
+    // Returns whether the given character a legal identifier character or not. 
+	// For details of the lexical identifier, please refer to '~/doc/Lexical Rules.md'.
     bool lexical::Pair::IsLetter(char ch)
     {
         if ((ch >= 'a'&& ch <= 'z') || (ch >= 'A'&&ch <= 'Z') || ch =='_')
             return true;
         return false;
     }
+
 
     int lexical::Pair::Digit(char ch, int numbering_system = 10)
     {
@@ -109,6 +107,11 @@ namespace lexical
     // Implements of functions from class Lexical.
 
     // private functions
+	void lexical::Lexical::add_symbol(Symbol sym)
+	{
+		SymbolTable.push_back(sym);
+	}
+
     void lexical::Lexical::reserve(Token w)
     {
         reserved.push_back(w);
@@ -174,8 +177,25 @@ namespace lexical
                 return reserved[index];
             }
         }
-        return Token(Tag::EOL);// Must invoke functions from identifier table.
+		Token nomatch(Tag::EOL);
+		nomatch.SetAddress(-1);
+
+        return nomatch;// Must invoke functions from identifier table.
     }
+
+	// Summary: Find address of registered symbol and return -1 if none exists.
+	// Return: Address of matched symbol or -1 for no match.
+	int lexical::Lexical::AddressRegisteredSymbol(string name,SymbolType type)
+	{
+		for (int index = 0; index < SymbolTable.size(); index++)
+        {
+			if (memcmp((SymbolTable[index].GetName()).data(), name.data(), name.length()) == 0 && SymbolTable[index].GetType()==type)
+            {
+				return index;
+			}
+		}
+		return -1;
+	}
 
     bool lexical::Lexical::SetFileStream(string filename)
     {
@@ -190,6 +210,45 @@ namespace lexical
             Lexical::_filename = filename;
         }
         return Lexical::IsFileStream;
+    }
+	void lexical::Lexical::PrintSymbols(vector<Symbol> syms)
+	{
+		if(Lexical::IsFileStream)
+			PrintSymbolsFile(syms);
+		if(syms.size()==0)
+			return;
+		const int size = syms.size();
+		for(int index= 0;index<size;index++)
+		{
+			printf("( %d , %d , %s )\n",index,syms[index].GetType(),syms[index].GetName().data());
+		}
+	}
+
+	// Manually print the symbols to local file or control the target with the IsFileStream flag.
+    void lexical::Lexical::PrintSymbolsFile(vector<Symbol> syms)
+    {
+        if(syms.size()==0)
+            return;
+        const int size = syms.size();
+        std::fstream stream("a.symbols",ios::out|ios::trunc);
+        if(!stream)
+        {
+            printf("ERROR OPENING a.symbols!\n");
+            return;
+        }else{
+            stream.clear();
+            stream<<
+            "# David Moriaty (@DevChache, yangzd1996@outlook.com)\n"<<
+            "# This is the auto generated symbol file for idtable.h in CURIO, \n"<<
+            "# the first column of numbers are the index and the second column \n"<<
+            "# are the internal tags of each lexeme.\n\n"<<
+			"< idx , type , name >"<< endl;
+        }
+        for(int index= 0;index<size;index++)
+        {
+			stream<<"< "<<index<<" ,\t "<<syms[index].GetType()<<" ,\t "<<syms[index].GetName()<<" >\n";
+        }
+        stream.close();
     }
 
     Token lexical::Lexical::Scan()
@@ -243,10 +302,20 @@ namespace lexical
                 stringstream ss;
                 ss.clear();
                 ss<< result;
-                return Token(Tag::NUM,ss.str()); // TODO: Add const item into Symbol Table.
+				int registered = AddressRegisteredSymbol(ss.str(),SymbolType::CONST);
+				if(registered==-1)
+				{
+					Symbol symbol(SymbolType::CONST,result);
+					add_symbol(symbol);
+					Token token(Tag::NUM,symbol.GetName()); // TODO: Add const item into Symbol Table.
+					token.SetAddress(symbol.GetIndex());
+				}
+				Token token(Tag::NUM,ss.str());
+				token.SetAddress(registered);
+				return token;
             }
-            float value = result;
-            float digit = 10;
+            double value = result;
+            double digit = 10;
 
             while (true)
             {
@@ -258,7 +327,20 @@ namespace lexical
                 digit *= 10;
             }
             // Return the matched float number.
-            return Token(Tag::NUM); // TODO: Add const item into Symbol Table.
+			stringstream ss;
+			ss.clear();
+			ss<< value;
+			int registered = AddressRegisteredSymbol(ss.str(),SymbolType::CONST);
+			if(registered==-1)
+			{
+				Symbol symbol(SymbolType::CONST,value);
+				add_symbol(symbol);
+            	Token token(Tag::NUM,symbol.GetName()); // TODO: Add const item into Symbol Table.
+				token.SetAddress(symbol.GetIndex());
+			}
+			Token token(Tag::NUM,ss.str());
+			token.SetAddress(registered);
+			return token;
         }
 
         // Get Identifier
@@ -271,12 +353,20 @@ namespace lexical
                 readch();
             } while (Pair::IsLetter(peek));
             string str = ss.str();
-			printf("try to match: %s\n",str.data());
             Token reserved_word = MatchReserved(str);
-            if((int)reserved_word.GetTag()!=-1)
-            	return reserved_word;
-			printf("identifier: %s\n",str.data());
-            reserved_word = Token(Tag::ID,str); // TODO: Add item to Symbol Table.
+            if((int)reserved_word.GetTag() != -1)
+				return reserved_word;
+			int registered_index = AddressRegisteredSymbol(str,SymbolType::IDENTIFIER);
+
+			if(registered_index == -1)
+			{
+				Symbol symbol(SymbolType::IDENTIFIER, str);
+				registered_index = symbol.GetIndex();
+				add_symbol(symbol);
+			}
+            reserved_word = Token(Tag::ID,str);
+			reserved_word.SetAddress(registered_index);
+			reserve(reserved_word);
             return reserved_word;
         }
         Token token(Tag::EOL); // MODIFY HERE.
@@ -324,6 +414,11 @@ namespace lexical
         }
         stream.close();
     }
+	
+	vector<Symbol> Lexical::GetSymbols()
+	{
+		return SymbolTable;
+	}
 
     int lexical::Lexical::GetInnerScanCount()
     {
