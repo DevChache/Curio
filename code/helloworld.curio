@@ -1,5 +1,12 @@
-program main
-var a : number ;
-{
-    a = a * 5 ;
-} ;
+program HelloWorld
+    var A , B , C , D , X , Y , Z : number ;
+    {
+        A = 5 ; 
+        B = 3 ; 
+        C = 2 ;
+        D = 1 ;
+        Z = 7 ;
+        Y = 6 ;
+        while ( A < B )
+            do if ( C < D ) then X = Y + Z 
+     } ;

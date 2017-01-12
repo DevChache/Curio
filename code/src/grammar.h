@@ -126,7 +126,6 @@ quadruple::Quadruple::Quadruple(quadruple::Equ equ)
 {
     Idx = Quadruple::count;
     Opt = (quadruple::Operation)Convert(equ.Op);
-	printf("%s, %s, %s, %s \n",equ.Op.data(),equ.StrLeft.data(),equ.StrRight.data(),equ.result.data());
     Src = Convert(equ.StrLeft);
     Dst = Convert(equ.StrRight);
     Addr = Convert(equ.result);
@@ -202,22 +201,10 @@ void quadruple::BasicBlockQuadruple::SetBasic()
 
 using namespace quadruple;
 
-//  struct Token{
-// 	int Label;  //单词序号
-// 	string Name;  //单词本身
-// 	int Code;  //单词的机内码
-// 	int Addr;  //地址，单词为保留字时为-1，为标识符或常数时为大于0的数值，即在符号表中的入口地址。
-// 	Token(){}
-//  };
-// typedef struct Symbol{
-// 	int Number;  //序号
-// 	int Type;  //类型
-// 	string Name;  //名字
-// };
-
 typedef struct S {
     vector<int> next;
 };
+
 typedef struct E {
     vector<int> falseExit;
     vector<int> trueExit;
@@ -271,11 +258,13 @@ public:
 
     // 创建临时变量NewTemp()并添加到symble中
     string NewTemp() {
-        string temp = "T" + ti;
+		stringstream ss;
+		ss << "T" <<ti;
+        
         ti++;
-        Symbol s(SymbolType::IDENTIFIER,temp);
-        symbols.push_back(s);
-        return temp;
+        //Symbol s(SymbolType::IDENTIFIER,temp);
+        //symbols.push_back(s);
+        return ss.str();
     }
 
     // 回填函数BackPatch(int addr, int addr2)
@@ -354,19 +343,19 @@ public:
                 // 类型为bool、number
                 if (tokens[i].GetTag() == 4 || tokens[i].GetTag() == 3)
                 {
-                    // 定义j，指向前面的标示符
-                    int j = i;
-                    j = j - 2;
-                    // 类型定义正确，在符号表中记录该标识符的类型
+                    // // 定义j，指向前面的标示符
+                    // int j = i;
+                    // j = j - 2;
+                    // // 类型定义正确，在符号表中记录该标识符的类型
 					
-                    symbols[tokens[j].GetAddress()].SetType(tokens[i].GetTag()==2?SymbolType::IDENTIFIER:SymbolType::CONST);
-                    j--;
-                    // 若标识符后面有逗号，表示同时定义了几个相同类型的变量，把它们都添加到符号表中
-                    while (tokens[j].GetTag() == 33 && j > 0) {
-                        j--;
-                        symbols[tokens[j].GetAddress()].SetType(tokens[i].GetTag()==2?SymbolType::IDENTIFIER:SymbolType::CONST);
-                        j--;
-                    }
+                    // symbols[tokens[j].GetAddress()].SetType(tokens[i].GetTag()==2?SymbolType::IDENTIFIER:SymbolType::CONST);
+                    // j--;
+                    // // 若标识符后面有逗号，表示同时定义了几个相同类型的变量，把它们都添加到符号表中
+                    // while (tokens[j].GetTag() == 33 && j > 0) {
+                    //     j--;
+                    //     symbols[tokens[j].GetAddress()].SetType(tokens[i].GetTag()==2?SymbolType::IDENTIFIER:SymbolType::CONST);
+                    //     j--;
+                    // }
                     Next();
                     if (tokens[i].GetTag() == 24) // 如果是分号，判断下一个单词，若为{，执行复合句；否则继续循环执行变量定义
                     {
@@ -446,7 +435,6 @@ public:
     {
         S s =  S();
         ExecuteSentence(s);// 执行执行句
-		        printf("checked2\n");
         if (error == "") {
             Next();
             if (tokens[i].GetTag() == 24) // 若为分号，继续循环执行语句表
@@ -454,6 +442,7 @@ public:
                 Next();
                 SentenceList();
             }
+			Next(); // YZD
         }
     }
 
@@ -473,6 +462,7 @@ public:
         else if (tokens[i].GetTag() == 27 || tokens[i].GetTag() == 7
                  || tokens[i].GetTag() == 8)// 如果是{或while或if
         {
+			printf("testing tokens[%d]=%d\n",i,tokens[i].GetTag());
             StructSentence(s);// 执行结构句
         }
         else// 否则返回到前一个字符
@@ -487,11 +477,13 @@ public:
     void AssignSentence() {
         if (tokens[i].GetTag() == 14)// 如果为=
         {
-            string temp = tokens[i - 1].GetName();// temp记录上一个token文件项的名字(标示符)
+			Token temp = tokens[i - 1];// temp记录上一个token文件项的名字(标示符)
             Next();
-            Expression();// 执行表达式
-
-            gen("0 ", tt, "555", temp);// 生成四元式，即temp=tt
+            Expression(); // 执行表达式
+			stringstream ss;
+			ss.clear();
+			ss<< temp.GetAddress();
+            gen("0", tt, "555", ss.str());// 生成四元式，即temp=tt
         }
         else {
             error = "赋值句变量后缺少=";
@@ -688,10 +680,13 @@ public:
         }
         else if (tokens[i].GetTag() == 25)// 如果为（-->（〈布尔表达式〉）
         {
+			
+			Next();
             E e1 =  E();// 定义E—>(E1)
             BoolExpression(e1);// 执行布尔表达式
             e.trueExit = e1.trueExit;
             e.falseExit = e1.falseExit;
+			Next();
             if (tokens[i].GetTag() == 26)// 如果为），返回
             {
                 return;
@@ -705,12 +700,14 @@ public:
     // 〈因子〉→〈算术量〉｜（〈算术表达式〉）
     // 〈算术量〉→〈标识符〉｜〈整数〉｜〈实数〉
     void ArithmeticExpression() {
-        Item();// 执行项
+        Item();// 执行 项
         if (error == "") {
             Next();
             if (tokens[i].GetTag() == 10 || tokens[i].GetTag() == 11)// 如果为+或-
             {
                 string temp[] = { tokens[i-1].GetName(),tokens[i].GetName() };// temp记录运算符和它前面的变量名字
+				Token a0 = tokens[i-1];
+				Token a1 = tokens[i];
                 if (tokens[i - 1].GetTag() == 26)// 符号为）
                 {
                     temp[0] = tt;
@@ -722,23 +719,39 @@ public:
                 // else if (temp[1].compare("-") == 0)
                 //     gen("2", temp[0], tt, NewTemp());// 生成四元式，即x=y-z的四元式为(-,y,z,T1)
                 // tt = "T" + (ti - 1); //TODO
-				int addrs  = 555;
+				int addrs  = 555; //
+				int addr1 = 555; // 
+                if (temp[1].compare("+") == 0)
+                {
 				stringstream ss;
 				ss.clear();
-				if (temp[1].compare("+") == 0)
-                {
 					string ntmp = NewTemp();
 					add_symbol(Symbol(SymbolType::IDENTIFIER,ntmp));
-					addrs = AddressRegisteredSymbol(ntmp,SymbolType::IDENTIFIER);
-					gen("1", temp[0], tt, ntmp); // 生成四元式，即x=y+z的四元式为(+,y,z,T1)
+					addrs = AddressRegisteredSymbol(ntmp,SymbolType::IDENTIFIER); // Find temp symbol address.
+					addr1 = a0.GetAddress();
+					ss<<addr1;
+					stringstream sss;
+					sss.clear();
+					sss<<addrs;
+					gen("1", ss.str(), tt, sss.str()); // 生成四元式，即x=y+z的四元式为(+,y,z,T1)
+					ss.clear();
 				}
                 else  if (temp[1].compare("-") == 0)
                 {
+				stringstream ss;
+				ss.clear();
 					string ntmp =NewTemp();
 					add_symbol(Symbol(SymbolType::IDENTIFIER,ntmp));
 					addrs = AddressRegisteredSymbol(ntmp,SymbolType::IDENTIFIER);
-					gen("2", temp[0], tt, ntmp); // 生成四元式，即x=y-z的四元式为(-,y,z,T1)
+					addr1 = a0.GetAddress();
+					ss<<addr1;
+					stringstream sss;
+					sss.clear();
+					sss<<addrs;
+					gen("2", ss.str(), tt, sss.str()); // 生成四元式，即x=y-z的四元式为(-,y,z,T1)
+					ss.clear();
 				}
+				stringstream ss;
 				ss << addrs;
 				tt = ss.str();
 
@@ -765,29 +778,46 @@ public:
             if (tokens[i].GetTag() == 12 || tokens[i].GetTag() == 13)// 如果为*或/
             {
                 string temp[] = { tokens[i-1].GetName(), tokens[i].GetName() };// temp记录运算符和它前面的变量名字
+				Token a0 = tokens[i-1];
                 if (tokens[i - 1].GetTag() == 26)// token文件的上一表项为）
                 {
                     temp[0] = tt;
                 }
                 Next();
                 Item();// 执行项
-				int addrs  = 555;
-				stringstream ss;
-				ss.clear();
+				int addrs  = 555; //
+				int addr1 = 555; // 
                 if (temp[1].compare("*") == 0)
                 {
+				stringstream ss;
+				ss.clear();
 					string ntmp = NewTemp();
 					add_symbol(Symbol(SymbolType::IDENTIFIER,ntmp));
-					addrs = AddressRegisteredSymbol(ntmp,SymbolType::IDENTIFIER);
-					gen("3", temp[0], tt, ntmp); // 生成四元式，即x=y*z的四元式为(*,y,z,T1)
+					addrs = AddressRegisteredSymbol(ntmp,SymbolType::IDENTIFIER); // Find temp symbol address.
+					addr1 = a0.GetAddress();
+					ss<<addr1;
+					stringstream sss;
+					sss.clear();
+					sss<<addrs;
+					gen("3", ss.str(), tt, sss.str()); // 生成四元式，即x=y*z的四元式为(*,y,z,T1)
+					ss.clear();
 				}
                 else  if (temp[1].compare("/") == 0)
                 {
+				stringstream ss;
+				ss.clear();
 					string ntmp =NewTemp();
 					add_symbol(Symbol(SymbolType::IDENTIFIER,ntmp));
 					addrs = AddressRegisteredSymbol(ntmp,SymbolType::IDENTIFIER);
-					gen("4", temp[0], tt, ntmp); // 生成四元式，即x=y/z的四元式为(/,y,z,T1)
+					addr1 = a0.GetAddress();
+					ss<<addr1;
+					stringstream sss;
+					sss.clear();
+					sss<<addrs;
+					gen("4", ss.str(), tt, sss.str()); // 生成四元式，即x=y/z的四元式为(/,y,z,T1)
+					ss.clear();
 				}
+				stringstream ss;
 				ss << addrs;
 				tt = ss.str();
             }
@@ -853,7 +883,7 @@ public:
         else if (tokens[i].GetTag() == 7)// while
         {
             Next();
-            WhileSentence(s);// 执行whlie语句
+            WhileSentence(s);// 执行while语句
         }
     }
 
@@ -865,6 +895,7 @@ public:
         BoolExpression(e);// 执行布尔表达式
         if (error == "") {
             Next();
+			 Next(); // YZD
             if (tokens[i].GetTag() == 31)// then
             {
                 int m1 = equs.size();
@@ -964,5 +995,9 @@ public:
 	void add_symbol(Symbol sym)
 	{
 		symbols.push_back(sym);
+	}
+	vector<Symbol> ReturnSymbols()
+	{
+		return symbols;
 	}
 };

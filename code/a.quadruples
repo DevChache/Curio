@@ -1,5 +1,14 @@
 # David Moriaty (@DevChache, yangzd1996@outlook.com)
 # This is the auto generated quadruples file for generator.h in CURIO, 
 < idx , opt , src , dst , addr >
-< 0 ,	 3 ,	 49 ,	 2 ,	 0 >
-< 1 ,	 -16 ,	 0 ,	 555 ,	 49 >
+< 0 ,	 0 ,	 8 ,	 555 ,	 1 >
+< 1 ,	 0 ,	 9 ,	 555 ,	 2 >
+< 2 ,	 0 ,	 10 ,	 555 ,	 3 >
+< 3 ,	 0 ,	 11 ,	 555 ,	 4 >
+< 4 ,	 0 ,	 12 ,	 555 ,	 7 >
+< 5 ,	 0 ,	 13 ,	 555 ,	 6 >
+< 6 ,	 5 ,	 17 ,	 18 ,	 0 >
+< 7 ,	 10 ,	 555 ,	 555 ,	 0 >
+< 8 ,	 5 ,	 19 ,	 20 ,	 0 >
+< 9 ,	 10 ,	 555 ,	 555 ,	 0 >
+< 10 ,	 10 ,	 555 ,	 555 ,	 0 >

@@ -108,6 +108,87 @@ namespace generator
 
 
 namespace basic
-{
+{   
+    vector<Symbol> symbols;
+    vector<Symbol> sub_symbols;
+    vector<BasicBlockQuadruple> blocks;
+    bool BX = false;
+    bool DX = false;
+    enum Active
+    {
+        ACTIVE = 0,
+        INACTIVE = 1
+    };
+    enum Usage
+    {
+        WAITING = 0,
+        HANGING = 1
+    };
+    // Summary: copy external symbols to symbols(storage);
+    void CloneSymbols(vector<Symbol>);
+    
+    // Summary: divide combined basic blocks into pieces and invoke BlockScan() to append usage and active information. 
+    void BlockDiv(vector<BasicBlockQuadruple>);
 
+    // Summary: append usage and active information. Reset two registers before return.
+    void BlockScan(vector<BasicBlockQuadruple>);
+
+    // Summary: allocate register for each SRC variable.
+    void AllocateRegister(BasicBlockQuadruple);
+
+
+    void CloneSymbols(vector<Symbol> symbls)
+    {
+        basic::symbols = symbls;
+    }
+
+    void BlockDiv(vector<BasicBlockQuadruple> original_blocks)
+    {
+        int size = original_blocks.size();
+        vector<BasicBlockQuadruple> temp;
+        int begin = 0;
+        int end = 1;
+        while(end<size)
+        {
+            while(end<size)
+            {
+                if(!original_blocks[end].IsEntrance())
+                    end++;
+                else 
+                    break;
+            }
+            while(begin<end)
+            {
+                temp.push_back(original_blocks[begin]);
+                begin++;
+            }
+            end++;
+            BlockScan(temp); // invoking.
+            temp.clear();
+        }
+    }
+
+    void BlockScan(vector<BasicBlockQuadruple> bblock)
+    {
+        const int bb_size = bblock.size();
+        sub_symbols.clear();
+        for(int index=0;index<bb_size;index++)
+        {
+            int Op = bblock[0].GetQuadruple().GetOperation();
+        }
+
+
+
+        int size = bb_size-1;
+        while(size>=0)
+        {
+            AllocateRegister(bblock[size]);
+            size --;
+        }
+        BX = DX = false;
+    }
+    void AllocateRegister(BasicBlockQuadruple quadruple)
+    {
+
+    }
 }

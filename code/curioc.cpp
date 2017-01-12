@@ -21,7 +21,6 @@ int main()
             num -= A.GetInnerScanCount();
         }
         A.PrintFile(storage);
-        printf("checked1\n");        
         Test T(storage,A.GetSymbols());
         vector<Equ> temp = T.GetEqus();
         vector<Quadruple> quls;
@@ -30,7 +29,7 @@ int main()
         {
             quls.push_back(Quadruple(temp[index]));
         }
-        A.PrintSymbolsFile(A.GetSymbols());
+        A.PrintSymbolsFile(T.ReturnSymbols());
         generator::PrintQuadruplesFile(quls);
         generator::PrintBasicBlocksFile(quls);
         
