@@ -1,13 +1,15 @@
 #include <string>
 #include <sstream>
+#include <vector>
 using namespace std;
 namespace idtable
 {
     enum SymbolType
     {
-        IDENTIFIER = 1,
-        CONST = 2
+        IDENTIFIER = 2,
+        CONST = 1
     };
+
     class Symbol
     {
     private:
@@ -22,6 +24,7 @@ namespace idtable
         double GetValue();
         int GetType();
         int GetIndex();
+        void SetType(SymbolType);
     };
     int Symbol::count = 0;
     Symbol::Symbol(SymbolType type,string name)
@@ -30,6 +33,10 @@ namespace idtable
         Type = type;
         Name = name;
         Symbol::count++;
+    }
+    void Symbol::SetType(SymbolType type)
+    {
+        Type = type;
     }
     Symbol::Symbol(SymbolType type,double value)
     {

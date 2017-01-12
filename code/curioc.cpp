@@ -1,12 +1,12 @@
 #include <iostream>
-#include "src/lexical.h"
 #include "src/generator.h"
 
 using namespace lexical;
 using namespace quadruple;
+
 int main()
 {
-    if(false)
+    if(true)
     {
         lexical::Lexical A;
         A.SetFileStream("helloworld.curio");
@@ -21,20 +21,21 @@ int main()
             num -= A.GetInnerScanCount();
         }
         A.PrintFile(storage);
+        printf("checked1\n");        
+        Test T(storage,A.GetSymbols());
+        vector<Equ> temp = T.GetEqus();
+        vector<Quadruple> quls;
+        int size = temp.size();
+        for(int index=0;index<size;index++)
+        {
+            quls.push_back(Quadruple(temp[index]));
+        }
         A.PrintSymbolsFile(A.GetSymbols());
+        generator::PrintQuadruplesFile(quls);
+        generator::PrintBasicBlocksFile(quls);
+        
     }
 
-    vector<Quadruple> qpls;
-    qpls.push_back(Quadruple(Equ("0","1","2","3")));
-    qpls.push_back(Quadruple(Equ("1","1","2","3")));
-    qpls.push_back(Quadruple(Equ("2","1","2","3")));
-    qpls.push_back(Quadruple(Equ("3","1","2","3")));
-    qpls.push_back(Quadruple(Equ("4","1","2","3")));
-    qpls.push_back(Quadruple(Equ("5","1","2","3")));
-    qpls.push_back(Quadruple(Equ("2","1","2","3")));
-    qpls.push_back(Quadruple(Equ("3","1","2","3")));
-    generator::PrintQuadruplesFile(qpls);
-    generator::PrintBasicBlocksFile(qpls);
 
     string anc_token,anc_symbol,anc_quadruple,anc_basicblock,anc_assembly;
     anc_token = "- Tokens file: a.token\n";
