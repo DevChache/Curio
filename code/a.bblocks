@@ -1,4 +1,4 @@
-# David Moriaty (@DevChache, yangzd1996@outlook.com)
+# Zang Yuhang 
 # This is the auto generated basic_blocks file for generator.h in CURIO, 
 < idx , opt , src , dst , addr , is_entry >
 < 0 ,	 0 ,	 8 ,	 555 ,	 1 ,	 true >
@@ -7,8 +7,7 @@
 < 3 ,	 0 ,	 11 ,	 555 ,	 4 ,	 false >
 < 4 ,	 0 ,	 12 ,	 555 ,	 7 ,	 false >
 < 5 ,	 0 ,	 13 ,	 555 ,	 6 ,	 false >
-< 6 ,	 5 ,	 17 ,	 18 ,	 0 ,	 false >
-< 7 ,	 10 ,	 555 ,	 555 ,	 0 ,	 true >
-< 8 ,	 5 ,	 19 ,	 20 ,	 0 ,	 true >
-< 9 ,	 10 ,	 555 ,	 555 ,	 0 ,	 true >
-< 10 ,	 10 ,	 555 ,	 555 ,	 0 ,	 true >
+< 6 ,	 1 ,	 6 ,	 -29 ,	 14 ,	 false >
+< 7 ,	 0 ,	 14 ,	 555 ,	 5 ,	 false >
+< 8 ,	 0 ,	 11 ,	 555 ,	 5 ,	 false >
+< 9 ,	 10 ,	 555 ,	 555 ,	 6723 ,	 false >

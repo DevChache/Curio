@@ -7,6 +7,7 @@ program HelloWorld
         D = 1 ;
         Z = 7 ;
         Y = 6 ;
-        while ( A < B )
-            do if ( C < D ) then X = Y + Z 
+        X = Y + Z ;
+        while ( true )
+            do X = 1 ;
      } ;

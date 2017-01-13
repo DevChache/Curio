@@ -3,6 +3,7 @@
 
 using namespace lexical;
 using namespace quadruple;
+using namespace basic;
 
 int main()
 {
@@ -33,6 +34,8 @@ int main()
         generator::PrintQuadruplesFile(quls);
         generator::PrintBasicBlocksFile(quls);
         
+        basic::CloneSymbols(T.ReturnSymbols());
+        basic::BlockDiv(generator::InitialBasicBlocks(quls));
     }
 
 

@@ -1,4 +1,3 @@
-#include <fstream>
 #include "grammar.h"
 using namespace std;
 using namespace idtable;
@@ -48,7 +47,6 @@ namespace generator
             {
                 target[original[index].GetAddr()].SetBasic();
                 temp_index = index + 1;
-                printf("test index: %d\n",index);
             }
         }
         return target;
@@ -123,13 +121,15 @@ namespace basic
         static bool used;
         static Symbol* latest;
     };
-    bool Reg_BX::used = false;
+    bool basic::Reg_BX::used = false;
     struct Reg_DX
     {
         static bool used;
         static Symbol* latest;
     };
-    bool Reg_DX::used = false;
+    Symbol* basic::Reg_BX::latest = 0;
+    Symbol* basic::Reg_DX::latest = 0;
+    bool basic::Reg_DX::used = false;
     enum Active
     {
         ACTIVE = 0,
@@ -153,38 +153,83 @@ namespace basic
         int index;
         Active active;
         Usage usage;
+        int next_quadruple_addr= -1;
         Triple(Active,Usage);
         Triple();
     };
-    int Triple::count = 0;
+    int basic::Triple::count = 0;
     Triple::Triple(Active act,Usage usg):active(act),usage(usg){index = Triple::count;count++;}
     Triple::Triple(){active = Active::INACTIVE;usage = Usage::HANGING;}
     
     class Register
     {
     public:
-        static int count;
         int index;
         Quadruple quadruple;
         Reg reg;
-        Register(Quadruple,Reg);
+        Register(Quadruple,Reg,int);
+        Register();
+        bool force = false;
+        void ForceMove();
     };
-    int Register::count = 0;
-    Register::Register(Quadruple qpl,Reg r):quadruple(qpl),reg(r){index = Register::count;count++;}
+
+    Register::Register(Quadruple qpl,Reg r,int i):quadruple(qpl),reg(r)
+    {
+        index = i;
+        if(reg==Reg::BX)
+            Reg_BX::used = true;
+        else Reg_DX::used = true;
+    }
+    Register::Register()
+    {
+
+    }
+    void Register::ForceMove()
+    {
+        force = true;
+    }
+
+    vector<Register> registers;
+
+
+    // Store index in symbol file and keeps the information of active status and usage.
+    class SymbolReference
+    {
+    public:
+        Active active;
+        Usage usage;
+        int symbol_addr;
+        SymbolReference(Active,Usage,int);
+        SymbolReference();
+    };
+    SymbolReference::SymbolReference(Active a,Usage u,int i)
+    {
+        active = a;
+        usage = u;
+        symbol_addr = i;
+    }
+    SymbolReference::SymbolReference()
+    {
+        active = Active::INACTIVE;
+        usage = Usage::HANGING;
+        symbol_addr = -1;
+    }
 
     // Combine active info and usage info in one object for one quadruple.
     class CombinedInfo
     {
     public:
         int array[3];
-        Triple src;
-        Triple dst;
-        Triple addr;
+        SymbolReference src;
+        SymbolReference dst;
+        SymbolReference addr;
         CombinedInfo(int,int,int);
     };
     CombinedInfo::CombinedInfo(int s,int d,int a)
     {
-        array = {s,d,a};
+        array[0] = s;
+        array[1] = d;
+        array[2] = a;
     }
 
 
@@ -202,7 +247,13 @@ namespace basic
     void BlockScan(vector<BasicBlockQuadruple>);
 
     // Summary: allocate register for each SRC variable.
-    void AllocateRegister(BasicBlockQuadruple);
+    Register AllocateRegister(BasicBlockQuadruple,vector<CombinedInfo>,int);
+
+    // Summary: generate assembly language file a.assembly.asm
+    void Generate(vector<BasicBlockQuadruple>);
+
+    // Summary: get allocated register
+    string GetReg(int);
 
 
     void CloneSymbols(vector<Symbol> symbls)
@@ -212,6 +263,9 @@ namespace basic
 
     void BlockDiv(vector<BasicBlockQuadruple> original_blocks)
     {
+        fstream stream("a.assembly.asm",ios::out|ios::trunc);
+        stream << "";
+        stream.close();
         int size = original_blocks.size();
         vector<BasicBlockQuadruple> temp;
         int begin = 0;
@@ -259,35 +313,45 @@ namespace basic
         for(int index=0;index<bb_size;index++)
         {
             // In this loop, all symbols in the current basic block will be cloned into another vector<Symbol>.
-            int Op = bblock[0].GetQuadruple().GetOperation();
+            int Op = bblock[index].GetQuadruple().GetOperation();
             if(Op==0)
             {
                 // Op: assignment, only Src and Addr is needed.
-                sub_symbols.push_back(symbols[bblock[0].GetQuadruple().GetSrc()]);
-                sub_symbols.push_back(symbols[bblock[0].GetQuadruple().GetAddr()]);
+                sub_symbols.push_back(symbols[bblock[index].GetQuadruple().GetSrc()]);
+                sub_symbols.push_back(symbols[bblock[index].GetQuadruple().GetAddr()]);
                 triples.push_back(Triple(Active::INACTIVE,Usage::HANGING));
                 triples.push_back(Triple(Active::INACTIVE,Usage::HANGING));
-                infos.push_back(CombinedInfo(1,0,1));
+                CombinedInfo info(1,0,1);
+                info.src.symbol_addr = bblock[index].GetQuadruple().GetSrc();
+                info.addr.symbol_addr = bblock[index].GetQuadruple().GetAddr();
+                infos.push_back(info);
             }
             else if (Op>0&&Op<5)
             {
                 // Op: arithmetic computing, Src, Dst and Addr ara needed.
-                sub_symbols.push_back(symbols[bblock[0].GetQuadruple().GetSrc()]);
-                sub_symbols.push_back(symbols[bblock[0].GetQuadruple().GetDst()]);
-                sub_symbols.push_back(symbols[bblock[0].GetQuadruple().GetAddr()]);
+                sub_symbols.push_back(symbols[bblock[index].GetQuadruple().GetSrc()]);
+                sub_symbols.push_back(symbols[bblock[index].GetQuadruple().GetDst()]);
+                sub_symbols.push_back(symbols[bblock[index].GetQuadruple().GetAddr()]);
                 triples.push_back(Triple(Active::INACTIVE,Usage::HANGING));
                 triples.push_back(Triple(Active::INACTIVE,Usage::HANGING));
                 triples.push_back(Triple(Active::INACTIVE,Usage::HANGING));
-                infos.push_back(CombinedInfo(1,1,1));
+                CombinedInfo info(1,0,1);
+                info.src.symbol_addr = bblock[index].GetQuadruple().GetSrc();
+                info.dst.symbol_addr = bblock[index].GetQuadruple().GetDst();
+                info.addr.symbol_addr = bblock[index].GetQuadruple().GetAddr();
+                infos.push_back(info);
             }
             else if ((Op>4&&Op<10)||Op==11)
             {
                 // Op: jump expression except unconditioned jump.
-                sub_symbols.push_back(symbols[bblock[0].GetQuadruple().GetSrc()]);
-                sub_symbols.push_back(symbols[bblock[0].GetQuadruple().GetDst()]);
+                sub_symbols.push_back(symbols[bblock[index].GetQuadruple().GetSrc()]);
+                sub_symbols.push_back(symbols[bblock[index].GetQuadruple().GetDst()]);
                 triples.push_back(Triple(Active::INACTIVE,Usage::HANGING));
                 triples.push_back(Triple(Active::INACTIVE,Usage::HANGING));
-                infos.push_back(CombinedInfo(1,1,0));
+                CombinedInfo info(1,0,1);
+                info.src.symbol_addr = bblock[index].GetQuadruple().GetSrc();
+                info.dst.symbol_addr = bblock[index].GetQuadruple().GetDst();
+                infos.push_back(info);
             }
         }
         Active lastASrc,lastADst,lastAAddr;
@@ -296,37 +360,225 @@ namespace basic
         lastUSrc=lastUDst=lastUAddr=Usage::HANGING;
         for(int index = bb_size-1;index>=0;index--)
         {
+            // in this loop compiler scan from the last quadruple to the first one the analysis the active info and usage.
             if(index == (bb_size-1))
             {
+                Quadruple current = bblock[index].GetQuadruple();
                 // the last expression, which may contains the export variable.
-                if(bblock[index].GetQuadruple().GetOperation()==0)
+                if(current.GetOperation()==0)
                 {
-                    triples[IndexInSubSymbols(symbols[bblock[index].GetQuadruple().GetAddr()])].active = Active::ACTIVE;
+                    // [NOTICE] in order to show the logic, the following steps are briefable but I insist to show the whole logic.
+
+                    // Init export value in symbol table to ACTIVE,HANGING;
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].active = Active::ACTIVE;
+
+                    // copy symbol table values to combinedinfos of the last quadruple.
                     infos[index].src.active = Active::INACTIVE;
                     infos[index].src.usage = Usage::HANGING;
                     infos[index].addr.active = Active::ACTIVE;
                     infos[index].addr.usage = Usage::HANGING;
-                }
-                else 
-                {
 
+                    // Set Addr to INACTIVE,HANGING and set Src/Dst to ACTIVE,next_quadruple_addr = last reference (in sub_symbols).
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].active = Active::INACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].active = Active::ACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].usage = Usage::WAITING;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].next_quadruple_addr = index;
+                }
+                else if(current.GetOperation()<5)
+                {
+                    // [NOTICE] the logic here is optimized.
+                    // In this section, all quadruples has 3 symbols.
+
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].active = Active::ACTIVE;
+                    // copy symbol table values to combinedinfos of the last quadruple.
+                    infos[index].src.active = Active::INACTIVE;
+                    infos[index].src.usage = Usage::HANGING;
+                    infos[index].dst.active = Active::ACTIVE;
+                    infos[index].dst.usage = Usage::HANGING;
+                    infos[index].addr.active = Active::ACTIVE;
+                    infos[index].addr.usage = Usage::HANGING;
+                    // Set Addr to INACTIVE,HANGING and set Src/Dst to ACTIVE,next_quadruple_addr = last reference (in sub_symbols).
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].active = Active::INACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].active = Active::ACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].usage = Usage::WAITING;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].next_quadruple_addr = index;
+                    triples[IndexInSubSymbols(symbols[current.GetDst()])].active = Active::ACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetDst()])].usage = Usage::WAITING;
+                    triples[IndexInSubSymbols(symbols[current.GetDst()])].next_quadruple_addr = index;
+                }
+                else if(current.GetOperation()>4&&current.GetOperation()!=10)
+                {
+                    // I dont't think a jump expression needs to be analysised about its active status and usage.
+                }
+            }
+            else if(index < (bb_size-1))
+            {
+                Quadruple current = bblock[index].GetQuadruple();
+                if(current.GetOperation()==0)
+                {
+                    // copy symbol table values to combinedinfos of the last quadruple.
+                    infos[index].src.active = triples[IndexInSubSymbols(symbols[current.GetSrc()])].active;
+                    infos[index].src.usage = triples[IndexInSubSymbols(symbols[current.GetSrc()])].usage;
+                    infos[index].addr.active = triples[IndexInSubSymbols(symbols[current.GetAddr()])].active;
+                    infos[index].addr.usage = triples[IndexInSubSymbols(symbols[current.GetAddr()])].usage;
+
+                    // Set Addr to INACTIVE,HANGING and set Src to ACTIVE,next_quadruple_addr = last reference (in sub_symbols).
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].active = Active::INACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].usage = Usage::HANGING;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].active = Active::ACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].usage = Usage::WAITING;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].next_quadruple_addr = index;
+                }
+                else if(current.GetOperation()<5)
+                {
+                    // In this section, all quadruples has 3 symbols.
+
+                    // copy symbol table values to combinedinfos of the last quadruple.
+                    infos[index].src.active = triples[IndexInSubSymbols(symbols[current.GetSrc()])].active;
+                    infos[index].src.usage = triples[IndexInSubSymbols(symbols[current.GetSrc()])].usage;
+                    infos[index].addr.active = triples[IndexInSubSymbols(symbols[current.GetAddr()])].active;
+                    infos[index].addr.usage = triples[IndexInSubSymbols(symbols[current.GetAddr()])].usage;
+                    infos[index].dst.active = triples[IndexInSubSymbols(symbols[current.GetDst()])].active;
+                    infos[index].dst.usage = triples[IndexInSubSymbols(symbols[current.GetDst()])].usage;
+                    // Set Addr to INACTIVE,HANGING and set Src/Dst to ACTIVE,next_quadruple_addr = last reference (in sub_symbols).
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].active = Active::INACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetAddr()])].usage = Usage::HANGING;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].active = Active::ACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].usage = Usage::WAITING;
+                    triples[IndexInSubSymbols(symbols[current.GetSrc()])].next_quadruple_addr = index;
+                    triples[IndexInSubSymbols(symbols[current.GetDst()])].active = Active::ACTIVE;
+                    triples[IndexInSubSymbols(symbols[current.GetDst()])].usage = Usage::WAITING;
+                    triples[IndexInSubSymbols(symbols[current.GetDst()])].next_quadruple_addr = index;
                 }
             }
         }
+        
 
-
-
-        int size = bb_size-1;
-        while(size>=0)
+        int size = 0;
+        while(size<bb_size)
         {
-            AllocateRegister(bblock[size]);
-            size --;
+            if(bblock[size].GetQuadruple().GetOperation()<5)
+                registers.push_back(AllocateRegister(bblock[size],infos,size));
+            size ++;
         }
         Reg_BX::used = false;
         Reg_DX::used = false;
+        Generate(bblock);
     }
-    void AllocateRegister(BasicBlockQuadruple quadruple)
-    {
 
+    Register AllocateRegister(BasicBlockQuadruple bquadruple,vector<CombinedInfo> infos,int index)
+    {
+        if(!Reg_BX::used)
+        {
+            // if BX is not in use, allocate register BX.
+            basic::Reg_BX::latest = &symbols[bquadruple.GetQuadruple().GetAddr()];
+            return Register(bquadruple.GetQuadruple(),Reg::BX,index);
+        }
+        else if (!Reg_DX::used)
+        {
+            // if DX is not in use and BX is occupied, allocate DX.
+            basic::Reg_DX::latest = &symbols[bquadruple.GetQuadruple().GetAddr()];
+            return Register(bquadruple.GetQuadruple(),Reg::DX,index);
+        }
+        else if(Reg_BX::latest==&symbols[bquadruple.GetQuadruple().GetAddr()]||(infos[index].addr.active==Active::INACTIVE&&infos[index].addr.usage==Usage::HANGING))
+        {
+            basic::Reg_BX::latest = &symbols[bquadruple.GetQuadruple().GetAddr()];
+            return Register(bquadruple.GetQuadruple(),Reg::BX,index);
+        }
+        else if(Reg_DX::latest==&symbols[bquadruple.GetQuadruple().GetAddr()]||(infos[index].addr.active==Active::INACTIVE&&infos[index].addr.usage==Usage::HANGING))
+        {
+            basic::Reg_DX::latest = &symbols[bquadruple.GetQuadruple().GetAddr()];
+            return Register(bquadruple.GetQuadruple(),Reg::DX,index);
+        }
+        else {
+            // [NOTICE] force the variable in Register to be moved to memory, and allocate register bx.
+            Reg_BX::latest = &symbols[bquadruple.GetQuadruple().GetAddr()];
+            Register reg(bquadruple.GetQuadruple(),Reg::BX,index);
+            reg.ForceMove();
+            return reg;
+        }
+    }
+
+    void Generate(vector<BasicBlockQuadruple> bbq)
+    {
+        stringstream ss;
+        ss.clear();
+        const int size  = bbq.size();
+        for(int index = 0;index<size;index++)
+        {
+            Quadruple current = bbq[index].GetQuadruple();
+            switch(current.GetOperation())
+            {
+                case quadruple::Operation::ASN:
+                {
+                    ss << "MOV " << GetReg(index) << ", [" << current.GetSrc() << "]\n";break;
+                }
+                case quadruple::Operation::ADD:
+                {
+                    string reg = GetReg(index);
+                    ss << "MOV " << reg << ", [" << current.GetSrc() << "]\n";
+                    ss << "ADD " << reg << ", ["<< current.GetDst() << "]\n";
+                    ss << "MOV [" << current.GetAddr() << "], "<< reg <<"\n";break;
+                }
+                case quadruple::Operation::SUB:
+                {
+                    string reg = GetReg(index);
+                    ss << "MOV " << reg << ", [" << current.GetSrc() << "]\n";
+                    ss << "SUB " << reg << ", ["<< current.GetDst() << "]\n";
+                    ss << "MOV [" << current.GetAddr() << "], "<< reg <<"\n";break;
+                    break;
+                }
+
+                case quadruple::Operation::MUL:
+                {
+                    string reg = GetReg(index);
+                    ss << "MOV " << reg << ", [" << current.GetSrc() << "]\n";
+                    ss << "MUL " << reg << ", ["<< current.GetDst() << "]\n";
+                    ss << "MOV [" << current.GetAddr() << "], "<< reg <<"\n";break;
+                    break;
+                }
+
+                case quadruple::Operation::DIV:
+                {
+                    string reg = GetReg(index);
+                    ss << "MOV " << reg << ", [" << current.GetSrc() << "]\n";
+                    ss << "DIV " << reg << ", ["<< current.GetDst() << "]\n";
+                    ss << "MOV [" << current.GetAddr() << "], "<< reg <<"\n";break;
+                    break;
+                }
+
+                case quadruple::Operation::JLT:
+                {
+                    string reg = GetReg(index);
+                    ss << "MOV " << reg << ", [" << current.GetSrc() << "]\n";
+                    ss << "CMP " << reg << ", ["<< current.GetDst() << "]\n";
+                    ss << "JL [" << current.GetAddr() << "], "<< reg <<"\n";break;
+                    break;
+                }
+            }
+        }
+        string str = ss.str();
+        
+        fstream stream("a.assembly.asm",ios::out|ios::app);
+        if(stream.good())
+        {
+            stream.clear();
+            stream <<str.data();
+            stream.close();
+        }
+    }
+
+    string GetReg(int index)
+    {
+        Register reg;
+        for(int idx=0;idx<registers.size();idx++)
+        {
+            if(registers[idx].index == index)
+            {
+                reg = registers[idx];
+                break;
+            }
+        }
+        return reg.reg == Reg::BX? "BX":"DX";
     }
 }

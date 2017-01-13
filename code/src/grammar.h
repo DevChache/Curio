@@ -295,7 +295,7 @@ public:
         else {
             error = "该程序缺少关键字program";
         }
-        cout << error << endl;
+        // cout << error << endl;
     }
 
     // 程序体ProgramBody()
